@@ -4,10 +4,15 @@ Arduino Library and Examples for BlHeli Passtrough with ESP32
 
 Sketch for BlHeli Passthrough without Flight Controller
 
-## MCU
-- ESP32
-- NRF52 (comming soon)
-- Atmega328P (comming soon)
+## ESP32
+- Espressif ESP32: https://github.com/espressif/arduino-esp32
+- NimBLE-Arduino: https://github.com/h2zero/NimBLE-Arduino
+- ESPSoftwareserial: https://github.com/plerup/espsoftwareserial/
+
+## NRF52 (comming soon)
+- Adafruit NRF52: https://github.com/adafruit/Adafruit_nRF52_Arduino
+
+## Atmega328P (comming soon)
 
 ## ESC
 ### BlHeli_32
