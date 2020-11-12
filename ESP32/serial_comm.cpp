@@ -18,19 +18,24 @@ void process_serial(void){
       serial_rx[serial_rx_counter] = Serial.read();
       //Serial.print(serial_rx[serial_rx_counter],HEX);                      // mit serieller Anzeige was gesendet wurde
       //Serial.print(" ");
+
+      if(serial_rx_counter == 4){
+        if(serial_rx[4] == 0){
+          serial_buffer_len = 256 + 7;
+        }
+        else{
+          serial_buffer_len = serial_rx[4] + 7;
+        }
+      }
       serial_rx_counter ++;
-      //delay(1);
-      //delay(10);  // ToDo: zu langsam?
+      if(serial_rx_counter == serial_buffer_len){
+        break;
+      }
     }
   }
   
   if(serial_command){
-    if(serial_rx[4] == 0){
-      serial_buffer_len = 256 + 7;
-    }
-    else{
-      serial_buffer_len = serial_rx[4] + 7;
-    }
+
     if((serial_rx[0] == 0x2F) && (serial_rx_counter == serial_buffer_len)/*&& Enable4Way*/){
       // 4 Way Command
       // 4 Way proceed

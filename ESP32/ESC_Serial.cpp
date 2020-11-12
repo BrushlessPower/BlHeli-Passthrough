@@ -6,7 +6,7 @@
 #include "SoftwareSerial.h"
 
 //#define _DEBUG_
-#define ESC_RX 21 
+#define ESC_RX 16 
 
 
 uint16_t esc_crc = 0;
