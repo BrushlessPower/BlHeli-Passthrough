@@ -4,9 +4,11 @@ Arduino Library and Examples for BlHeli Passtrough with ESP32
 
 Sketch for BlHeli Passthrough without Flight Controller
 
-Please edit the #define ESC_RX in ESC_Serial.cpp to choose your Pin where the ESC is connected
+
 
 ## ESP32
+Please edit the #define ESC_RX in ESC_Serial.cpp to choose your Pin where the ESC is connected
+
 - Espressif ESP32: https://github.com/espressif/arduino-esp32
 - NimBLE-Arduino: https://github.com/h2zero/NimBLE-Arduino
 - ESPSoftwareserial: https://github.com/plerup/espsoftwareserial/
@@ -15,6 +17,10 @@ Please edit the #define ESC_RX in ESC_Serial.cpp to choose your Pin where the ES
 - Adafruit NRF52: https://github.com/adafruit/Adafruit_nRF52_Arduino
 
 ## Atmega328P (comming soon)
+Please edit the #define ESC_RX and ESC_TX in ESC_Serial.cpp to choose your Pins where the ESC is connected
+Connect a 1k Resistor between RX and TX
+
+BlHeli Configurator Firmware Flashing doesn't work (Keep Alive Bug in Configurator)
 
 ## ESC
 ### BlHeli_32 https://github.com/bitdump/BLHeli/tree/master/BLHeli_32%20ARM
