@@ -5,6 +5,12 @@
 #include "SoftwareSerial.h"
 
 //#define _DEBUG_
+
+/* Please edit the #define ESC_RX and ESC_TX in ESC_Serial.cpp to choose your Pins where the ESC is connected
+ * Connect a 1k Resistor between RX and TX
+ * You have to change SoftwareSerial RX Buffer Size in C:\Users\User\AppData\Local\Arduino15\packages\arduino\hardware\avr\1.6.23\libraries\SoftwareSerial\src
+ * Change #define _SS_MAX_RX_BUFF 64 to 300 in SoftwareSerial.h
+ */
 #define ESC_RX 11 
 #define ESC_TX 10 
 
