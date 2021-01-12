@@ -1,24 +1,33 @@
 # BlHeli-Passthrough
-Arduino Library and Examples for BlHeli Passtrough with ESP32
+Arduino Library and Examples for BlHeli Passtrough with ESP32 or Atmega328P (Arduino UNO, Pro Mini, ...)
 
 
 Sketch for BlHeli Passthrough without Flight Controller
 
 
 ## ESP32
-Please edit the #define ESC_RX in ESC_Serial.cpp to choose your Pin where the ESC is connected
+- Default Servo Signal Pin: GPIO16
+- Please edit the #define ESC_RX in ESC_Serial.cpp to choose another Pin
 
+
+### needed Libraries for ESP32 use
 - Espressif ESP32: https://github.com/espressif/arduino-esp32
 - NimBLE-Arduino: https://github.com/h2zero/NimBLE-Arduino
 - ESPSoftwareserial: https://github.com/plerup/espsoftwareserial/
 
+all Libraries are available in Arduino Library Manager
+
 ## Atmega328P
-Please edit the #define ESC_RX and ESC_TX in ESC_Serial.cpp to choose your Pins where the ESC is connected
-Connect a 1k Resistor between RX and TX
+- Default Pins: Servo RX = GPIO11; Servo TX = GPIO 10
+- connect Servo Signal to Servo RX (11)
+- connect 1k Resistor between Servo RX (11) and Servo TX (10)
+
+- Please edit the #define ESC_RX and ESC_TX in ESC_Serial.cpp to choose other Pins
+
 You have to Change SoftwareSerial RX Buffer Size in C:\Users\User\AppData\Local\Arduino15\packages\arduino\hardware\avr\1.6.23\libraries\SoftwareSerial\src
 Change #define _SS_MAX_RX_BUFF 64 to 300 in SoftwareSerial.h
 
-BlHeli Configurator Firmware Flashing doesn't work (Keep Alive Bug in Configurator)
+BlHeli Configurator Firmware Flashing doesn't work (Keep Alive Bug in Configurator) -> should be fixed already
 
 ## ESC
 ### BlHeli_32 https://github.com/bitdump/BLHeli/tree/master/BLHeli_32%20ARM
