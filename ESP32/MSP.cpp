@@ -1,9 +1,7 @@
-//#include <bluefruit.h>
 #include <Arduino.h>
-#include "Global.h"
-#include "version.h"
-#include "msp_protocol.h"
-#include "ESC_Serial.h"
+#include "Global.h"         // Global Variables
+#include "MSP.h"            // MSP Header
+#include "ESC_Serial.h"     // ESC Serial function for Start/Stop Serial
 
 //#define _DEBUG_
 
@@ -12,7 +10,7 @@ uint8_t MSP_Check(uint8_t MSP_buf[], uint8_t buf_size){
   // http://www.stefanocottafavi.com/msp-the-multiwii-serial-protocol/
   // Checksum is 8 bit XOR of Size,type, and Payload
   
-  uint8_t MSP_Size = MSP_buf[3];
+  uint8_t MSP_OSize = 0;
   uint8_t MSP_type = MSP_buf[4];
   uint8_t MSP_crc = MSP_buf[buf_size-1];    // For Request (buf_size-1) is always 5
   uint8_t crc;
@@ -27,19 +25,9 @@ uint8_t MSP_Check(uint8_t MSP_buf[], uint8_t buf_size){
      MSP_buf[5]= MSP_PROTOCOL_VERSION;
      MSP_buf[6]= API_VERSION_MAJOR;
      MSP_buf[7]= API_VERSION_MINOR;
-     crc = MSP_buf[3] ^ MSP_buf[4];
-     for(uint8_t i = 5; i < 8;i++){
-      crc = crc ^ MSP_buf[i];
-     }
-     MSP_buf[8]= crc;
-     //MSP_buf[8]= 0x29;    // CRC
-#ifdef _DEBUG_ 
-     Serial.print("with CRC: 0x");
-     Serial.print(crc,HEX);
-     Serial.print(" ");
-#endif
-     buf_size = 9;
+     MSP_OSize = 8;
   }
+  
   else if(MSP_type == MSP_FC_VARIANT && MSP_crc == 0x02){   // MSP_FC_VARIANT
 #ifdef _DEBUG_      
      Serial.print("MSP_FC_VARIANT ");
@@ -51,19 +39,9 @@ uint8_t MSP_Check(uint8_t MSP_buf[], uint8_t buf_size){
      MSP_buf[6]= 0x54;     //BETAFLIGHT_IDENTIFIER "T"
      MSP_buf[7]= 0x46;     //BETAFLIGHT_IDENTIFIER "F"
      MSP_buf[8]= 0x4C;     //BETAFLIGHT_IDENTIFIER "L"
-     crc = MSP_buf[3] ^ MSP_buf[4];
-     for(uint8_t i = 5; i < 9;i++){
-      crc = crc ^ MSP_buf[i];
-     }
-     //MSP_buf[9]= 0x1A;
-     MSP_buf[9]= crc;
-#ifdef _DEBUG_ 
-     Serial.print("with CRC: 0x");
-     Serial.print(crc,HEX);
-     Serial.print(" ");
-#endif
-     buf_size = 10;
+     MSP_OSize = 9;
   }
+  
   else if(MSP_type == MSP_FC_VERSION && MSP_crc == 0x03){   // MSP_FC_VERSION
 #ifdef _DEBUG_ 
      Serial.print("MSP_FC_VERSION ");
@@ -74,19 +52,9 @@ uint8_t MSP_Check(uint8_t MSP_buf[], uint8_t buf_size){
      MSP_buf[5]= FC_VERSION_MAJOR;
      MSP_buf[6]= FC_VERSION_MINOR;
      MSP_buf[7]= FC_VERSION_PATCH_LEVEL;
-     crc = MSP_buf[3] ^ MSP_buf[4];
-     for(uint8_t i = 5; i < 8;i++){
-      crc = crc ^ MSP_buf[i];
-     }
-     MSP_buf[8]= crc;
-#ifdef _DEBUG_ 
-     Serial.print("with CRC: 0x");
-     Serial.print(crc,HEX);
-     Serial.print(" ");
-#endif
-     //MSP_buf[8]= 0x05;
-     buf_size = 9;
+     MSP_OSize = 8;
   }
+  
   else if(MSP_type == MSP_BOARD_INFO && MSP_crc == 0x04){   // MSP_BOARD_INFO
 #ifdef _DEBUG_ 
      Serial.print("MSP_BOARD_INFO ");
@@ -96,13 +64,13 @@ uint8_t MSP_Check(uint8_t MSP_buf[], uint8_t buf_size){
      MSP_buf[4]= MSP_BOARD_INFO;
      MSP_buf[5]= 'B';
      MSP_buf[6]= 'P';
-     MSP_buf[7]= 'P';
-     MSP_buf[8]= 'T';
+     MSP_buf[7]= 'M';
+     MSP_buf[8]= 'C';
      MSP_buf[9]= 0x00;    // HW Revision
      MSP_buf[10]= 0x00;   // HW Revision
      MSP_buf[11]= 0x00;   // FC w/wo MAX7456
      MSP_buf[12]= 0x00;   // targetCapabilities
-     MSP_buf[13]= 0x0E;   // Name String length
+     MSP_buf[13]= 0x14;   // Name String length
      MSP_buf[14]= 'B';    // Name.....
      MSP_buf[15]= 'r';
      MSP_buf[16]= 'u';
@@ -118,11 +86,11 @@ uint8_t MSP_Check(uint8_t MSP_buf[], uint8_t buf_size){
      MSP_buf[26]= 'e';
      MSP_buf[27]= 'r';
      MSP_buf[28]= ' ';
-     MSP_buf[29]= 'E';
-     MSP_buf[30]= 'S';
-     MSP_buf[31]= 'P';
-     MSP_buf[32]= '3';
-     MSP_buf[33]= '2';
+     MSP_buf[29]= 'M';
+     MSP_buf[30]= 'C';
+     MSP_buf[31]= 'T';
+     MSP_buf[32]= 'R';
+     MSP_buf[33]= 'L';
      MSP_buf[34]= 0x00;
      MSP_buf[35]= 0x00;
      MSP_buf[36]= 0x00;
@@ -173,19 +141,9 @@ uint8_t MSP_Check(uint8_t MSP_buf[], uint8_t buf_size){
      MSP_buf[81]= 0x00;   // configurationProblems
      MSP_buf[82]= 0x00;   // SPI
      MSP_buf[83]= 0x00;   // I2C
-     crc = MSP_buf[3] ^ MSP_buf[4];
-     for(uint8_t i = 5; i < 83;i++){
-      crc = crc ^ MSP_buf[i];
-     }
-     MSP_buf[84]= crc;
-#ifdef _DEBUG_ 
-     Serial.print("with CRC: 0x");
-     Serial.print(crc,HEX);
-     Serial.print(" ");
-#endif
-     //MSP_buf[8]= 0x05;
-     buf_size = 85;
+     MSP_OSize = 84;
   }
+  
   else if(MSP_type == MSP_BUILD_INFO && MSP_crc == 0x05){   // MSP_BUILD_INFO
 #ifdef _DEBUG_ 
      Serial.print("MSP_BUILD_INFO ");
@@ -219,20 +177,9 @@ uint8_t MSP_Check(uint8_t MSP_buf[], uint8_t buf_size){
      MSP_buf[28]= 0x00;
      MSP_buf[29]= 0x00;
      MSP_buf[30]= 0x00;
-     //MSP_buf[31]= 0x00;
-     crc = MSP_buf[3] ^ MSP_buf[4];
-     for(uint8_t i = 5; i < 31;i++){
-      crc = crc ^ MSP_buf[i];
-     }
-     MSP_buf[31]= crc;
-#ifdef _DEBUG_ 
-     Serial.print("with CRC: 0x");
-     Serial.print(crc,HEX);
-     Serial.print(" ");
-#endif
-     //MSP_buf[8]= 0x05;
-     buf_size = 32;
+     MSP_OSize = 31;
   }
+  
   else if(MSP_type == MSP_STATUS && MSP_crc == 0x65){   // MSP_STATUS
 #ifdef _DEBUG_ 
      Serial.print("MSP_STATUS ");
@@ -262,19 +209,9 @@ uint8_t MSP_Check(uint8_t MSP_buf[], uint8_t buf_size){
      MSP_buf[24]= 0x00,//0x10;   // armingDisableFlags
      MSP_buf[25]= 0x00;   // armingDisableFlags
      MSP_buf[26]= 0x00;   // getRebootRequired()
-     crc = MSP_buf[3] ^ MSP_buf[4];
-     for(uint8_t i = 5; i < 27;i++){
-      crc = crc ^ MSP_buf[i];
-     }
-     MSP_buf[27]= crc;
-#ifdef _DEBUG_ 
-     Serial.print("with CRC: 0x");
-     Serial.print(crc,HEX);
-     Serial.print(" ");
-#endif
-     //MSP_buf[27]= 0xA6;
-     buf_size = 28;
+     MSP_OSize = 27;
   }
+  
   else if(MSP_type == MSP_MOTOR_3D_CONFIG && MSP_crc == 0x7C){   // MSP_3D
 #ifdef _DEBUG_      
      Serial.print("MSP_3D ");
@@ -288,19 +225,9 @@ uint8_t MSP_Check(uint8_t MSP_buf[], uint8_t buf_size){
      MSP_buf[8]= 0x00;//0x05;   // flight3DConfig()->deadband3d_high
      MSP_buf[9]= 0x00;//0xB4;   // flight3DConfig()->neutral3d
      MSP_buf[10]= 0x00;//0x05;    // flight3DConfig()->neutral3d
-     crc = MSP_buf[3] ^ MSP_buf[4];
-     for(uint8_t i = 5; i < 11;i++){
-      crc = crc ^ MSP_buf[i];
-     }
-     MSP_buf[11]= crc;
-#ifdef _DEBUG_ 
-     Serial.print("with CRC: 0x");
-     Serial.print(crc,HEX);
-     Serial.print(" ");
-#endif
-     //MSP_buf[11]= 0x5F;
-     buf_size = 12;
+     MSP_OSize = 11;
   }
+  
   else if(MSP_type == MSP_MOTOR_CONFIG && MSP_crc == 0x83){   // MSP_MOTOR_CONFIG
 #ifdef _DEBUG_ 
      Serial.print("MSP_MOTOR_CONFIG ");
@@ -318,19 +245,9 @@ uint8_t MSP_Check(uint8_t MSP_buf[], uint8_t buf_size){
      MSP_buf[12]= 0x00;//0x10;   // motorConfig()->motorPoleCount
      MSP_buf[13]= 0x00;//0x01;   // motorConfig()->dev.useDshotTelemetry
      MSP_buf[14]= 0x00;   // featureIsEnabled(FEATURE_ESC_SENSOR)
-     crc = MSP_buf[3] ^ MSP_buf[4];
-     for(uint8_t i = 5; i < 15;i++){
-      crc = crc ^ MSP_buf[i];
-     }
-     MSP_buf[15]= crc;
-#ifdef _DEBUG_ 
-     Serial.print("with CRC: 0x");
-     Serial.print(crc,HEX);
-     Serial.print(" ");
-#endif
-     //MSP_buf[15]= 0x8A;
-     buf_size = 16;
+     MSP_OSize = 15;
   }
+  
   else if(MSP_type == MSP_MOTOR && MSP_crc == 0x68){   // MSP_MOTOR
 #ifdef _DEBUG_ 
      Serial.print("MSP_MOTOR ");
@@ -354,19 +271,9 @@ uint8_t MSP_Check(uint8_t MSP_buf[], uint8_t buf_size){
      MSP_buf[18]= 0x00;
      MSP_buf[19]= 0x00;
      MSP_buf[20]= 0x00;
-     crc = MSP_buf[3] ^ MSP_buf[4];
-     for(uint8_t i = 5; i < 21;i++){
-      crc = crc ^ MSP_buf[i];
-     }
-     MSP_buf[21]= crc;
-#ifdef _DEBUG_ 
-     Serial.print("with CRC: 0x");
-     Serial.print(crc,HEX);
-     Serial.print(" ");
-#endif
-     //MSP_buf[21]= 0x78;
-     buf_size = 22;
+     MSP_OSize = 21;
   }
+  
   else if(MSP_type == MSP_FEATURE_CONFIG && MSP_crc == 0x24){   // MSP_FEATURE_CONFIG
 #ifdef _DEBUG_ 
      Serial.print("MSP_FEATURE_CONFIG ");
@@ -378,19 +285,9 @@ uint8_t MSP_Check(uint8_t MSP_buf[], uint8_t buf_size){
      MSP_buf[6]= 0x00;//0x04;    // getFeatureMask()
      MSP_buf[7]= 0x00;//0x00;    // getFeatureMask()
      MSP_buf[8]= 0x00;//0x30;    // getFeatureMask()
-     crc = MSP_buf[3] ^ MSP_buf[4];
-     for(uint8_t i = 5; i < 9;i++){
-      crc = crc ^ MSP_buf[i];
-     }
-     MSP_buf[9]= crc;
-#ifdef _DEBUG_ 
-     Serial.print("with CRC: 0x");
-     Serial.print(crc,HEX);
-     Serial.print(" ");
-#endif
-     //MSP_buf[9]= 0x1C;
-     buf_size = 10;
+     MSP_OSize = 9;
   }
+  
   else if(MSP_type == MSP_BOXIDS && MSP_crc == 0x77){   // MSP_BOXIDS
 #ifdef _DEBUG_ 
      Serial.print("MSP_BOXIDS ");
@@ -422,20 +319,9 @@ uint8_t MSP_Check(uint8_t MSP_buf[], uint8_t buf_size){
      MSP_buf[26]= 0x00;
      MSP_buf[27]= 0x00;
      MSP_buf[28]= 0x00;
-     //MSP_buf[29]= 0x00;
-     crc = MSP_buf[3] ^ MSP_buf[4];
-     for(uint8_t i = 5; i < 29;i++){
-      crc = crc ^ MSP_buf[i];
-     }
-     MSP_buf[29]= crc;
-#ifdef _DEBUG_ 
-     Serial.print("with CRC: 0x");
-     Serial.print(crc,HEX);
-     Serial.print(" ");
-#endif
-     //MSP_buf[9]= 0x1C;
-     buf_size = 30;
+     MSP_OSize = 29;
   }
+  
   else if(MSP_type == MSP_SET_4WAY_IF && MSP_crc == 0xF5){   // MSP_4wayInit
 #ifdef _DEBUG_ 
      Serial.print("MSP_SET_4WAY_IF ");
@@ -444,22 +330,10 @@ uint8_t MSP_Check(uint8_t MSP_buf[], uint8_t buf_size){
      MSP_buf[3]= 0x01;
      MSP_buf[4]= MSP_SET_4WAY_IF;
      MSP_buf[5]= 0x01;//0x04;    // get channel number, switch all motor lines HI, reply with the count of ESC found
-     crc = MSP_buf[3] ^ MSP_buf[4];
-     for(uint8_t i = 5; i < 6;i++){
-      crc = crc ^ MSP_buf[i];
-     }
-     MSP_buf[6]= crc;
-#ifdef _DEBUG_ 
-     Serial.print("with CRC: 0x");
-     Serial.print(crc,HEX);
-     Serial.print(" ");
-#endif
-     //MSP_buf[6]= 0xF0;
-     buf_size = 7;
      InitSerialOutput();
-     Enable4Way = true;
-     // ToDo: enable 4 Way Interface; disable Servo/Dshot Output;
+     MSP_OSize = 6;
   }
+  
   else if(MSP_type == MSP_ADVANCED_CONFIG && MSP_crc == 0x5A){   // MSP_ADVACED_CONFIG
 #ifdef _DEBUG_ 
      Serial.print("MSP_ADVACED_CONFIG ");
@@ -487,19 +361,9 @@ uint8_t MSP_Check(uint8_t MSP_buf[], uint8_t buf_size){
      MSP_buf[22]= 0x00;//0x02;    // gyroConfig()->checkOverflow
      MSP_buf[23]= 0x00;//0x06;    // systemConfig()->debug_mode
      MSP_buf[24]= 0x00;//0x3C;    // DEBUG_COUNT
-     crc = MSP_buf[3] ^ MSP_buf[4];
-     for(uint8_t i = 5; i < 25;i++){
-      crc = crc ^ MSP_buf[i];
-     }
-     MSP_buf[25]= crc;
-#ifdef _DEBUG_ 
-     Serial.print("with CRC: 0x");
-     Serial.print(crc,HEX);
-     Serial.print(" ");
-#endif 
-     //MSP_buf[25]= 0x4C;
-     buf_size = 26;
+     MSP_OSize = 25;
   }
+  
   else if(MSP_type == MSP_UID && MSP_crc == 0xA0){   // MSP_UID
 #ifdef _DEBUG_      
      Serial.print("MSP_UID ");
@@ -519,18 +383,21 @@ uint8_t MSP_Check(uint8_t MSP_buf[], uint8_t buf_size){
      MSP_buf[14]= 0x00;
      MSP_buf[15]= 0x00;
      MSP_buf[16]= 0x00;
-     crc = MSP_buf[3] ^ MSP_buf[4];
-     for(uint8_t i = 5; i < 17;i++){
+     MSP_OSize = 17;
+  }
+
+  crc = MSP_buf[3] ^ MSP_buf[4];
+     for(uint8_t i = 5; i < MSP_OSize;i++){
       crc = crc ^ MSP_buf[i];
      }
-     MSP_buf[17]= crc;
+     MSP_buf[MSP_OSize]= crc;
 #ifdef _DEBUG_ 
      Serial.print("with CRC: 0x");
      Serial.print(crc,HEX);
      Serial.print(" ");
 #endif
-     buf_size = 18;
-  }
+     buf_size = MSP_OSize + 1;
+
   
   return buf_size;
 }
