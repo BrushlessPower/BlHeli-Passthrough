@@ -2,7 +2,7 @@
 Arduino Library and Examples for BlHeli Passtrough with ESP32 or Atmega328P (Arduino UNO, Pro Mini, ...)
 
 
-Sketch for BlHeli Passthrough without Flight Controller
+Sketch for BlHeli Passthrough without Flight Controller Just for BlHeli32 or AM32 and all other imARM_BLB ESC's
 
 
 ## ESP32
