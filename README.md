@@ -25,8 +25,11 @@ all Libraries are available in Arduino Library Manager
 - Please edit the #define ESC_RX and ESC_TX in ESC_Serial.cpp to choose other Pins
 
 You have to Change SoftwareSerial RX Buffer Size in:
-- Windows: C:\Users\User\AppData\Local\Arduino15\packages\arduino\hardware\avr\1.6.23\libraries\SoftwareSerial\src
-- MaxOS: /Users/{username}/Library/Arduino15/packages/arduino/hardware/avr/1.8.6/libraries/SoftwareSerial/src 
+- Windows:
+  - C:\Users\User\AppData\Local\Arduino15\packages\arduino\hardware\avr\1.6.23\libraries\SoftwareSerial\src
+- MacOS:
+  - /Users/{username}/Library/Arduino15/packages/arduino/hardware/avr/1.8.6/libraries/SoftwareSerial/src
+  - /Applications/Arduino.app/Contents/Java/hardware/arduino/avr/libraries/SoftwareSerial/src  
 
 Change #define _SS_MAX_RX_BUFF 64 to 300 in SoftwareSerial.h
 
