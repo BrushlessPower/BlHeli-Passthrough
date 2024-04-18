@@ -4,7 +4,7 @@
 
 void setup(){
   pinMode(LED_BUILTIN, OUTPUT);
-  uint8_t pins[PIN_COUNT] = {20, 21, 22, 23}; // place your motor pins in this array, up to 8 motors
+  uint8_t pins[PIN_COUNT] = {10, 11, 12, 13}; // place your motor pins in this array, up to 8 motors
   // there are no limitations as to which pins you can use
   beginPassthrough(pins, PIN_COUNT);
   // alternative 1: beginPassthrough(10); will only start the passthrough on one pin (10 in this case)
