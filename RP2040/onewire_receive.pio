@@ -1,0 +1,17 @@
+.program onewire_receive
+
+; a small delay here tends to reduce transmission errors if the pullup is missing
+set pindirs, 0 [5]
+discard:
+mov isr, null
+.wrap_target
+set X, 7
+wait 0 pin, 0 [23] ; wait for start bit, delay 1.5 bits to sample in the center of each bit
+read_bit:
+in pins, 1 [14] ; sample 8 bits
+jmp X--, read_bit
+jmp pin, push_byte ; discard bit if the stop bit is not present
+jmp discard [2] ; reduced delay to leave room for slight clock deviations
+push_byte:
+push block [3] ; reduced delay to leave room for slight clock deviations
+.wrap

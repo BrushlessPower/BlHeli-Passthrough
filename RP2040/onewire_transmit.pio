@@ -1,0 +1,13 @@
+.program onewire_transmit
+
+; a small delay here tends to reduce transmission errors if the pullup is missing
+set pins, 1 [2]
+set pindirs, 1 [2]
+.wrap_target
+pull block
+set pins, 0 [15] ; start bit
+write_bit:
+out pins, 1 [14] ; 8 data bits
+jmp !osre, write_bit
+set pins, 1 [14] ; stop bit
+.wrap
