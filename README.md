@@ -31,8 +31,11 @@ all Libraries are available in Arduino Library Manager
 
 -   Please edit the #define ESC_RX and ESC_TX in ESC_Serial.cpp to choose other Pins
 
-You have to Change SoftwareSerial RX Buffer Size in C:\Users\User\AppData\Local\Arduino15\packages\arduino\hardware\avr\1.6.23\libraries\SoftwareSerial\src
-Change #define \_SS_MAX_RX_BUFF 64 to 300 in SoftwareSerial.h
+You have to Change SoftwareSerial RX Buffer Size in:
+- Windows: C:\Users\User\AppData\Local\Arduino15\packages\arduino\hardware\avr\1.6.23\libraries\SoftwareSerial\src
+- MaxOS: /Users/{username}/Library/Arduino15/packages/arduino/hardware/avr/1.8.6/libraries/SoftwareSerial/src 
+
+Change #define _SS_MAX_RX_BUFF 64 to 300 in SoftwareSerial.h
 
 BlHeli Configurator Firmware Flashing doesn't work (Keep Alive Bug in Configurator) -> should be fixed already
 
